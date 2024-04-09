@@ -1,35 +1,48 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 
 function Register() {
   const [formData, setFormData] = useState({
     email: '',
     name: '',
-    password: '',
-    confirmPassword: ''
+    password: ''
+    
   });
+  const [message, setMessage]=useState('');
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
+  const handleChange = (e) =>{
+    setFormData({...formData, [e.target.name]: e.target.value});
   };
 
-  const handleSubmit = (e) => {
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Add your validation and submission logic here
-    // For simplicity, I'm just logging the form data
-    console.log(formData);
+    try{
+      const response = await axios.post('http://localhost:8080/register',formData);
+      console.log('Response:', response.data);
+      if(response.status===200)
+        setMessage(response.data.message || 'Unknown error try again')
+    }
+    catch(error){
+      console.log('Error', error);
+      
+      if(error.response.status===500)
+      {
+        setMessage('Internal Error');
+      }
+      else
+        setMessage('Server Error Try Again');
+    }
   };
+
 
   return (
     <div >
-      
+      <h2 className='font-bold p-2 flex'>{message}</h2>
       <form onSubmit={handleSubmit}>
         <div>
           <label htmlFor="email">Email:</label>
-          <input className='block'
+          <input className='block' 
             type="email"
             id="email"
             name="email"
@@ -60,17 +73,7 @@ function Register() {
             required
           />
         </div>
-        <div>
-          <label htmlFor="confirmPassword">Confirm Password:</label>
-          <input className='block'
-            type="password"
-            id="confirmPassword"
-            name="confirmPassword"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            required
-          />
-        </div>
+        
         <button className='bg-blue-100 hover:bg-blue-500 p-1' type="submit">Register</button>
       </form>
     </div>

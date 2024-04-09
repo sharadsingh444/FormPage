@@ -1,9 +1,9 @@
-const express =require('express');
+const express = require('express');
 const bodyParser = require('body-parser')
 const cors = require('cors');
 const app = express();
-const mysql = require('mysql2/promise');
-const port = 8080;
+const mysql = require('mysql2');
+
 
 
 app.use(cors());
@@ -21,9 +21,9 @@ const dbConfig = {
 const pool = mysql.createPool(dbConfig);
 
 // test the database connection
-pool.getConnection((err,connection)=>{
-    if(err){
-        console.error('Database connection error:' +err);
+pool.getConnection((err, connection) => {
+    if (err) {
+        console.error('Database connection error:' + err);
         return;
     }
     console.log('connected to the Mysqldatabase');
@@ -31,20 +31,27 @@ pool.getConnection((err,connection)=>{
 });
 
 
-// Post route for login
-app.post('/formpage', async (req, res) => {
+app.post('/formpage', (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) {
         return res.status(400).json({ error: 'email and password are required' });
     }
-    try {
-        const [rows] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
-        if (rows.length === 0) {
+
+    pool.query('SELECT * FROM users WHERE email = ?', [email], (error, results, fields) => {
+        if (error) {
+            console.error('Database error:', error);
+            return res.status(500).json({ error: 'Internal server error' });
+        }
+
+        console.log('Query result:', results);
+
+        if (results.length === 0) {
             // Email doesn't exist in the database
             return res.status(401).json({ error: 'Email not found' });
         } else {
             // Email exists, check if password matches
-            if (rows[0].password !== password) {
+            const user = results[0];
+            if (user.password !== password) {
                 // Password is incorrect
                 return res.status(401).json({ error: 'Password incorrect' });
             } else {
@@ -52,10 +59,22 @@ app.post('/formpage', async (req, res) => {
                 return res.status(200).json({ message: 'Login successfully' });
             }
         }
-    } catch (error) {
-        console.error('Error querying database:', error);
-        return res.status(500).json({ error: 'Internal Server Error' });
-    }
+    });
+});
+//Register and add data into database
+app.post('/register', (req, res) => {
+    const { email, name, password } = req.body;
+    console.log(req.body)
+    pool.query('INSERT INTO users (email, name, password) VALUES (?, ?, ?)', [email, name, password], (error, results, fields) => {
+        if (error) {
+            console.error('Error:', error);
+            return res.status(500).json({ message: 'Internal Server error' });
+        }
+        console.log(results);
+        console.log('User Register Successfully');
+        res.status(200).json({ message: 'User register successfully' });
+
+    });
 });
 
 
@@ -86,7 +105,7 @@ app.post('/formpage', async (req, res) => {
 // // Define a POST route to add a new user
 // app.post('/api/users', (req, res) => {
 //     const { name } = req.body;
-    
+
 //     if (!name) {
 //         return res.status(400).json({ error: 'Name is required' });
 //     }
@@ -112,7 +131,7 @@ app.post('/formpage', async (req, res) => {
 // app.put('/api/users/:id', (req, res) => {
 //     const userId = req.params.id;
 //     const { name } = req.body;
-    
+
 //     if (!name) {
 //         return res.status(400).json({ error: 'Name is required' });
 //     }
@@ -123,7 +142,7 @@ app.post('/formpage', async (req, res) => {
 //           console.error('Error updating user in the database: ' + error.stack);
 //           return res.status(500).json({ error: 'Failed to update user' });
 //       }
-      
+
 //       if (results.affectedRows === 0) {
 //           return res.status(404).json({ error: 'User not found' });
 //       }
@@ -147,7 +166,7 @@ app.post('/formpage', async (req, res) => {
 //           console.error('Error deleting user from the database: ' + error.stack);
 //           return res.status(500).json({ error: 'Failed to delete user' });
 //       }
-      
+
 //       if (results.affectedRows === 0) {
 //           return res.status(404).json({ error: 'User not found' });
 //       }
@@ -162,6 +181,7 @@ app.post('/formpage', async (req, res) => {
 // });
 
 //start the server
-app.listen(port,()=>{
+const port = 8080;
+app.listen(port, () => {
     console.log(`Server is running on post localhost://${port}`);
 });

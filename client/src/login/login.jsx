@@ -17,6 +17,7 @@ const Login = () => {
 
             if (response.status === 200) {
                 setMessage('Login successful');
+                window.location.href="/home2";
             } else {
                 setMessage(response.data.error || 'Unknown error occurred');
             }
