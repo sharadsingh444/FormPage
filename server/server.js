@@ -1,8 +1,15 @@
-const express = require('express');
-const bodyParser = require('body-parser')
-const cors = require('cors');
+// const express = require('express');
+// const bodyParser = require('body-parser')
+// const cors = require('cors');
+// const mysql = require('mysql2');
+
+import express from 'express';
+import nodemailer from 'nodemailer';
+import bodyParser from 'body-parser';
+import 'dotenv/config';
+import cors from 'cors';
+import mysql from 'mysql2';
 const app = express();
-const mysql = require('mysql2');
 
 
 
@@ -30,7 +37,7 @@ pool.getConnection((err, connection) => {
     connection.release();
 });
 
-
+///login page authentication to check email and password exist in database or not
 app.post('/formpage', (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) {
@@ -61,6 +68,32 @@ app.post('/formpage', (req, res) => {
         }
     });
 });
+
+///verify otp in database;
+app.post('/verifyotp', (req, res) => {
+    const { email, OTP } = req.body;
+    if (!OTP) {
+        return res.status(400).json({ error: 'OTP not exist in database' });
+    }
+
+    pool.query('SELECT * FROM users WHERE email = ? AND otp = ? ', [email, OTP], (error, results, fields) => {
+        if (error) {
+            console.error('Database error:', error);
+            return res.status(500).json({ error: 'Internal server error' });
+        }
+        if (results.length === 0) {
+            // Email doesn't exist in the database
+            return res.status(401).json({ error: 'Wrong OTP please enter correct one' });
+        } else {
+            
+                
+                return res.status(200).json({ message: 'Login successfully' });
+           
+        }
+    });
+});
+
+
 //Register and add data into database
 app.post('/register', (req, res) => {
     const { email, name, password } = req.body;
@@ -79,6 +112,7 @@ app.post('/register', (req, res) => {
 
 
 //111111111111111111111111111111111111111111111111111
+
 //Define a get route 
 
 
@@ -181,7 +215,54 @@ app.post('/register', (req, res) => {
 // });
 
 //start the server
-const port = 8080;
+
+
+/////abhishek server start
+const transporter = nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false,
+    auth: {
+        user: "av67280@gmail.com",
+        pass: process.env.PASS,
+    },
+});
+app.post('/reset', (req, res) => {
+    const tomail = req.body.email;
+    const data = req.body.otp;
+    const option = {
+        from: 'av67280@gmail.com',
+        to: tomail,
+        subject: 'OTP Verification',
+        text: `"Your verification code is: ${data}. Please enter it to complete the testing process."`
+    };
+
+    transporter.sendMail(option, (err, info) => {
+        if (err) {
+            console.log(err);
+            res.status(500).send('Error sending email');
+        } else {
+            ///upadate otp in database
+            pool.query('UPDATE users SET otp =  ? WHERE email= ?', [data, tomail],(error,results,fields) => {
+                if (error) {
+                    console.error('Error updating OTP: ' + error);
+                    return res.status(500).json({ message: "Error updating OTP" });
+                  }
+                  if (results.affectedRows === 0) {
+                    return res.status(404).json({ message: "User not found" });
+                  }
+                 // return res.status(200).json({ message: "OTP updated successfully" });
+                  console.log('Email sent' + info.response);
+                  res.status(200).send('Email Sent Successfully');
+        
+            });
+
+           
+        }
+    });
+});
+// abhisghek server end
+const port = process.env.PORT;
 app.listen(port, () => {
     console.log(`Server is running on post localhost://${port}`);
 });

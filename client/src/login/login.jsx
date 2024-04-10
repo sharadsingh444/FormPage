@@ -1,10 +1,43 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom'
+import OTPpage from '../OTPpage';
 
+
+const generateOTP = async () => {
+    const OTP = Math.floor(100000 + Math.random() * 900000);
+    return OTP.toString();
+}
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
+    const [otp, setOtp] = useState('')
+    const [page, setPage] = useState(false);
+    const navigate = useNavigate();
+
+    //abhishek start
+    // const [email, setemail] = useState('');
+
+    const handleOTP = async () => {
+
+        try {
+            const newOTP = await generateOTP();
+
+            await axios.post('http://localhost:8080/reset', { otp: newOTP, email: email });
+
+            console.log(newOTP);
+            setOtp(newOTP)
+            console.log(otp);
+            console.log('OTP sent successfully');
+
+            setPage(true)
+        } catch (error) {
+            console.error('Error sending OTP:', error);
+        }
+    }
+    ///abhishek end
+
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -17,7 +50,9 @@ const Login = () => {
 
             if (response.status === 200) {
                 setMessage('Login successful');
-                window.location.href="/home2";
+                // navigate("/verifyOTP");
+                handleOTP();
+
             } else {
                 setMessage(response.data.error || 'Unknown error occurred');
             }
@@ -36,33 +71,36 @@ const Login = () => {
 
     return (
         <div>
+
             <div className='font-bold my-1 flex justify-center items-center'>{message}</div>
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label>Email:</label>
-                    <input
-                        className='block rounded-md'
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                    />
-                </div>
-                <div>
-                    <label>Password</label>
-                    <input
-                        className='block'
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                    />
-                </div>
-                <div className='flex justify-between mt-2'>
-                    <button className='bg-blue-100 hover:bg-blue-500 p-1 rounded-md w-[30%]' type="submit">Login</button>
-                    <button className='text-blue italic text-sm text-blue-600 hover:text-base'>Forget password</button>
-                </div>
-            </form>
+            {page ? <OTPpage otp={otp} setOtp={setOtp} email={email} resendFunction={handleOTP} /> :
+                <form onSubmit={(event) => { handleSubmit(event) }}>
+                    <div>
+                        <label>Email:</label>
+                        <input
+                            className='block rounded-md'
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label>Password</label>
+                        <input
+                            className='block'
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <div className='flex justify-between mt-2'>
+                        <button className='bg-blue-100 hover:bg-blue-500 p-1 rounded-md w-[30%]' type="submit">Login</button>
+                        <button className='text-blue italic text-sm text-blue-600 hover:text-base'>Forget password</button>
+                    </div>
+                </form>
+            }
         </div>
     );
 };
