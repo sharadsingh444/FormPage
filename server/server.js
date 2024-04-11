@@ -71,27 +71,41 @@ app.post('/formpage', (req, res) => {
 
 ///verify otp in database;
 app.post('/verifyotp', (req, res) => {
-    const { email, OTP } = req.body;
-    if (!OTP) {
-        return res.status(400).json({ error: 'OTP not exist in database' });
+    const { email, otp } = req.body;
+    if (!otp) {
+        return res.status(400).json({ error: 'OTP not provided' });
     }
 
-    pool.query('SELECT * FROM users WHERE email = ? AND otp = ? ', [email, OTP], (error, results, fields) => {
+    pool.query('SELECT * FROM users WHERE email = ? AND otp = ? ', [email, otp], (error, results, fields) => {
         if (error) {
             console.error('Database error:', error);
             return res.status(500).json({ error: 'Internal server error' });
         }
-        if (results.length === 0) {
-            // Email doesn't exist in the database
-            return res.status(401).json({ error: 'Wrong OTP please enter correct one' });
+        if (results.length > 0) {
+            return res.status(200).json({ message: 'Login successfully' });
         } else {
-            
-                
-                return res.status(200).json({ message: 'Login successfully' });
-           
+            return res.status(401).json({ error: 'Wrong OTP, please enter the correct one' });
         }
     });
 });
+
+
+/// update otp as null in database after timer end
+
+app.put('/update-otp/:email', (req, res) => {
+    const email = req.params.email;
+  
+    // Update OTP to null in the database
+    const query = 'UPDATE users SET otp = null WHERE email = ?';
+    pool.query(query, [email], (err, result) => {
+      if (err) {
+        console.error('Error updating OTP:', err);
+        res.status(500).json({ error: 'Internal server error' });
+        return;
+      }
+      res.status(200).json({ message: 'OTP updated successfully' });
+    });
+  });
 
 
 //Register and add data into database
@@ -223,7 +237,7 @@ const transporter = nodemailer.createTransport({
     port: 587,
     secure: false,
     auth: {
-        user: "av67280@gmail.com",
+        user: "sslovess3030@gmail.com",
         pass: process.env.PASS,
     },
 });

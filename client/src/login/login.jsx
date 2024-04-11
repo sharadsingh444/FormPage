@@ -28,7 +28,7 @@ const Login = () => {
 
             console.log(newOTP);
             setOtp(newOTP)
-            console.log(otp);
+           // console.log(otp);
             console.log('OTP sent successfully');
 
             setPage(true)
@@ -50,7 +50,6 @@ const Login = () => {
 
             if (response.status === 200) {
                 setMessage('Login successful');
-                // navigate("/verifyOTP");
                 handleOTP();
 
             } else {
