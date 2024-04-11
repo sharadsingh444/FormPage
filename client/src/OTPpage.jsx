@@ -101,6 +101,7 @@ const OTPpage = ({ otp, setOtp, email, resendFunction }) => {
       </div>
     </div>
   )
+  
 };
 
 export default OTPpage

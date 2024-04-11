@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom'
+import {Link,useNavigate } from 'react-router-dom'
 import OTPpage from '../OTPpage';
 
 
@@ -14,7 +14,7 @@ const Login = () => {
     const [message, setMessage] = useState('');
     const [otp, setOtp] = useState('')
     const [page, setPage] = useState(false);
-    const navigate = useNavigate();
+    // const navigate = useNavigate();
 
     //abhishek start
     // const [email, setemail] = useState('');
@@ -24,11 +24,11 @@ const Login = () => {
         try {
             const newOTP = await generateOTP();
 
-            await axios.post('http://localhost:8080/reset', { otp: newOTP, email: email });
+            await axios.post('http://localhost:8080/sendotp', { otp: newOTP, email: email });
 
             console.log(newOTP);
             setOtp(newOTP)
-           // console.log(otp);
+            // console.log(otp);
             console.log('OTP sent successfully');
 
             setPage(true)
@@ -73,32 +73,42 @@ const Login = () => {
 
             <div className='font-bold my-1 flex justify-center items-center'>{message}</div>
             {page ? <OTPpage otp={otp} setOtp={setOtp} email={email} resendFunction={handleOTP} /> :
-                <form onSubmit={(event) => { handleSubmit(event) }}>
+                <div>
+                    <form onSubmit={(event) => { handleSubmit(event) }}>
+                        <div>
+                            <label>Email:</label>
+                            <input
+                                className='block rounded-md'
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <div>
+                            <label>Password</label>
+                            <input
+                                className='block'
+                                type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <div className='flex justify-between mt-2'>
+                            <button className='bg-blue-100 hover:bg-blue-500 p-1 rounded-md w-[30%]' type="submit">Login</button>
+
+                        </div>
+                    </form>
                     <div>
-                        <label>Email:</label>
-                        <input
-                            className='block rounded-md'
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                        />
+                        <Link to='/forgetpassword'>
+                            <button className='text-blue italic text-sm text-blue-600 hover:text-base font-semibold'>Forget password</button>
+                        </Link>
                     </div>
-                    <div>
-                        <label>Password</label>
-                        <input
-                            className='block'
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
-                    </div>
-                    <div className='flex justify-between mt-2'>
-                        <button className='bg-blue-100 hover:bg-blue-500 p-1 rounded-md w-[30%]' type="submit">Login</button>
-                        <button className='text-blue italic text-sm text-blue-600 hover:text-base'>Forget password</button>
-                    </div>
-                </form>
+
+                </div>
+
+
             }
         </div>
     );

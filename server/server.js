@@ -1,7 +1,3 @@
-// const express = require('express');
-// const bodyParser = require('body-parser')
-// const cors = require('cors');
-// const mysql = require('mysql2');
 
 import express from 'express';
 import nodemailer from 'nodemailer';
@@ -68,6 +64,7 @@ app.post('/formpage', (req, res) => {
         }
     });
 });
+
 
 ///verify otp in database;
 app.post('/verifyotp', (req, res) => {
@@ -241,7 +238,7 @@ const transporter = nodemailer.createTransport({
         pass: process.env.PASS,
     },
 });
-app.post('/reset', (req, res) => {
+app.post('/sendotp', (req, res) => {
     const tomail = req.body.email;
     const data = req.body.otp;
     const option = {
@@ -253,7 +250,7 @@ app.post('/reset', (req, res) => {
 
     transporter.sendMail(option, (err, info) => {
         if (err) {
-            console.log(err);
+            console.log(err); 
             res.status(500).send('Error sending email');
         } else {
             ///upadate otp in database
@@ -276,7 +273,31 @@ app.post('/reset', (req, res) => {
     });
 });
 // abhisghek server end
+
+
+
+/// forget mail check
+app.post('/forgetcheck', (req,res)=>{
+    const email=req.body.email;
+
+    pool.query('SELECT * FROM users WHERE email= ? ',[email],(error, results, fields)=>{
+        if(error)
+        {
+            console.log("forget mail check error");
+          return  res.status(500).send("forget maail check error 500");
+        }
+        
+        if(results.length===0)
+        {
+          return  res.status(401).json({message: "forget mail not exist in database"});
+        }
+        console.log("forget mail check exist.");
+       return res.status(200).json({message: "forget mail check found"});
+
+    });
+
+});
 const port = process.env.PORT;
 app.listen(port, () => {
     console.log(`Server is running on post localhost://${port}`);
-});
+}); 
