@@ -14,6 +14,7 @@ const Login = () => {
     const [message, setMessage] = useState('');
     const [otp, setOtp] = useState('')
     const [page, setPage] = useState(false);
+    const [key,setKey] =useState(false);
     // const navigate = useNavigate();
 
     //abhishek start
@@ -72,7 +73,7 @@ const Login = () => {
         <div>
 
             <div className='font-bold my-1 flex justify-center items-center'>{message}</div>
-            {page ? <OTPpage otp={otp} setOtp={setOtp} email={email} resendFunction={handleOTP} /> :
+            {page ? <OTPpage otp={otp} setOtp={setOtp} key={key} email={email} resendFunction={handleOTP} /> :
                 <div>
                     <form onSubmit={(event) => { handleSubmit(event) }}>
                         <div>
@@ -103,6 +104,11 @@ const Login = () => {
                     <div>
                         <Link to='/forgetpassword'>
                             <button className='text-blue italic text-sm text-blue-600 hover:text-base font-semibold'>Forget password</button>
+                        </Link>
+                    </div>
+                    <div>
+                        <Link to='/forgetpassword'>
+                            <button className='text-blue italic text-sm text-blue-600 hover:text-base font-semibold'>Reset password</button>
                         </Link>
                     </div>
 

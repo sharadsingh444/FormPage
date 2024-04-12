@@ -297,6 +297,22 @@ app.post('/forgetcheck', (req,res)=>{
     });
 
 });
+// update new password]
+app.post('/change-password', (req, res) => {
+    const { email, newPassword } = req.body;
+
+    const sql = 'UPDATE users SET password = ? WHERE email = ?';
+    pool.query(sql, [newPassword, email], (err, result) => {
+        if (err) {
+            console.error(err);
+            res.status(500).json({ message: 'Internal server error' });
+        } else {
+            res.json({ message: 'Password updated successfully' });
+        }
+    });
+});
+
+
 const port = process.env.PORT;
 app.listen(port, () => {
     console.log(`Server is running on post localhost://${port}`);

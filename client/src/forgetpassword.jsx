@@ -8,6 +8,7 @@ const Forgetpassword = () => {
     const [message, setMessage] = useState('');
     const [isExist, setIsExist] = useState(false);
     const [otp, setOtp] = useState('')
+    const [key,setKey] =useState(true);
     
     const generateOTP = async () => {
         const OTP = Math.floor(100000 + Math.random() * 900000);
@@ -57,7 +58,7 @@ const Forgetpassword = () => {
         <div className='bg-gray-100 w-[100%] h-[100vh] flex justify-center items-center '>
             { isExist 
             ?
-            <OTPpage otp={otp} setOtp={setOtp} email={email} resendFunction={handleOTP}/>
+            <OTPpage otp={otp} setOtp={setOtp}  key={key} email={email} resendFunction={handleOTP}/>
             :
 
             <div className='bg-blue-100 w-[50%] h-[50%] p-1'>

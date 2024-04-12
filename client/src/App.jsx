@@ -6,6 +6,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import Hom from './home2'
 import OTPpage from './OTPpage'
 import Forgetpassword from './forgetpassword'
+import Resetpassword from './resetpassword'
 
 const App = () => {
   // const [isLogin, setIsLogin] = useState(false);
@@ -16,7 +17,7 @@ const App = () => {
         <Routes>
           <Route path="/verifyOTP" element={<OTPpage/>}   />
           <Route path="/forgetpassword" element={<Forgetpassword/> }/>
-          
+          <Route path="/resetpassword" element={< Resetpassword/>} />
           <Route path="/" element={<Home/>} />
           <Route path="/home2" element={<Hom />} />
           <Route path="/formpage" element={<FormPage/>} />

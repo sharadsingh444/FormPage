@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { Navigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import Resetpassword from './resetpassword';
 
-const OTPpage = ({ otp, setOtp, email, resendFunction }) => {
+const OTPpage = ({ otp, setOtp, key, email, resendFunction }) => {
 
   const [value, setValue] = useState('');
   const [para, setPara] = useState('');
@@ -10,6 +11,7 @@ const OTPpage = ({ otp, setOtp, email, resendFunction }) => {
   const [seconds, setSeconds] = useState(1);
   const [isSuccess, setisSuccess] = useState(false);
   const [message, setMessage] = useState()
+  const Navigate = useNavigate();
   useEffect(() => {
     const interval = setInterval(() => {
       if (seconds > 0) {
@@ -21,7 +23,7 @@ const OTPpage = ({ otp, setOtp, email, resendFunction }) => {
         } else {
           updateOTP(email);
           clearInterval(interval);
-        }  
+        }
       }
     }, 1000);
 
@@ -34,7 +36,21 @@ const OTPpage = ({ otp, setOtp, email, resendFunction }) => {
     setMinutes(1);
     setSeconds(1);
   };
-  
+  const CallBack = () => {
+    if (key) {
+      Navigate('/home2')
+    }
+    else {
+      Navigate('/resetpassword',{
+        state:{
+          email,
+        }
+      })
+      
+    }
+
+  }
+
   // update otp as null
   async function updateOTP(email) {
     try {
@@ -45,34 +61,34 @@ const OTPpage = ({ otp, setOtp, email, resendFunction }) => {
     }
   }
 
-/// verify otp
+  /// verify otp
   const handleClick = async () => {
     try {
-        const response = await axios.post('http://localhost:8080/verifyotp', { email: email, otp: value });
-     
-        if (response.status === 200) {
-            if (response.data.message === 'Login successfully') {
-                setisSuccess(true);
-                setPara("OTP Verification Successful");
-                <Navigate to='/home2'/>
-            } else {
-                setMessage(response.data.error || 'Unknown error occurred');
-                setisSuccess(false);
-                setPara("OTP Incorrect");
-            }
+      const response = await axios.post('http://localhost:8080/verifyotp', { email: email, otp: value });
+
+      if (response.status === 200) {
+        if (response.data.message === 'Login successfully') {
+          setisSuccess(true);
+          setPara("OTP Verification Successful");
+          CallBack();
         } else {
-            setMessage(response.data.error || 'Unknown error occurred');
-            setisSuccess(false);
-            setPara("OTP Incorrect");
+          setMessage(response.data.error || 'Unknown error occurred');
+          setisSuccess(false);
+          setPara("OTP Incorrect");
         }
-    } catch (error) {
-        setMessage(error.response.data.error || 'Network error occurred');
-        setValue('');
+      } else {
+        setMessage(response.data.error || 'Unknown error occurred');
         setisSuccess(false);
         setPara("OTP Incorrect");
+      }
+    } catch (error) {
+      setMessage(error.response.data.error || 'Network error occurred');
+      setValue('');
+      setisSuccess(false);
+      setPara("OTP Incorrect");
     }
     setValue('');
-};
+  };
   return (
     <div className='bg-blue-200 h-[230px] w-[400px] rounded-lg '>
       <div className='m-6 flex flex-col gap-4'>
@@ -101,7 +117,7 @@ const OTPpage = ({ otp, setOtp, email, resendFunction }) => {
       </div>
     </div>
   )
-  
+
 };
 
 export default OTPpage
